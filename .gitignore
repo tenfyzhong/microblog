@@ -1,3 +1,5 @@
+app.db
+db_repository/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
