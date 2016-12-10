@@ -4,7 +4,7 @@
 from flask import render_template, redirect, flash, session, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, oid
-from .forms import LoginForm
+from .forms import LoginForm, LogonForm
 from .models import User
 
 
@@ -17,17 +17,7 @@ def load_user(id):
 
 @app.before_request
 def before_request():
-    try:
-        app.logger.info(current_user)
-        if current_user.is_anonymous:
-            app.logger.info('is_anonymous')
-            g.user = None
-        else:
-            app.logger.info("no anonymous")
-            g.user = current_user
-        app.logger.info('g.user type: %s' % type(g.user))
-    except Exception, e:
-        app.logger.error(e)
+    g.user = current_user
 
 
 @app.route('/')
@@ -55,21 +45,46 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
-    # app.logger.info("login, g.user: %r", g.user)
-    if g.user is not None and g.user.is_authenticated:
-        return redirect(url_for('index'))
+    app.logger.info('method ' + request.method)
+    if request.method == 'GET':
+        if g.user is not None and g.user.is_authenticated:
+            return redirect(url_for('index'))
     form = LoginForm()
+    app.logger.info(form)
     if form.validate_on_submit():
         session['remember_me'] = form.remember_me.data
+        app.logger.info(form.openid.data)
         return oid.try_login(form.openid.data, ask_for=['nickname', 'email'])
     return render_template('login.html',
+                           next=oid.get_next_url(),
                            title='Sign In',
                            form=form,
                            providers=app.config['OPENID_PROVIDERS'])
 
 
+@app.route('/logon', methods=['GET', 'POST'])
+def logon():
+    form = LogonForm()
+    if form.validate_on_submit():
+        app.logger.info(form.nickname.data)
+        app.logger.info(form.email.data)
+        app.logger.info(form.password.data)
+        # TODO added by tenfy 2016-12-10 18:11 add to db
+        user = User(nickname=form.nickname.data,
+                    email=form.email.data,
+                    password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('login'))
+
+    return render_template('logon.html',
+                           title="Logon",
+                           form=form)
+
+
 @oid.after_login
 def after_login(resp):
+    app.logger.info('resp %r' % resp)
     if resp.email is None or resp.email == "":
         flash('Invalid login, Please try again.')
         return redirect(url_for('login'))
