@@ -14,7 +14,7 @@ app.config.from_object('config')
 handler = logging.FileHandler('flask.log')
 # handler.setLevel(logging.DEBUG)
 logging_format = logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(filename)s -%(funcName)s - %(lineno)s - %(message)s'
+    '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s'
 )
 handler.setFormatter(logging_format)
 app.logger.addHandler(handler)
