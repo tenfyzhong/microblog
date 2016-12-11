@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import db
 from flask_login import UserMixin
+from hashlib import md5
 
 
 class User(db.Model, UserMixin):
@@ -9,6 +10,8 @@ class User(db.Model, UserMixin):
     nickname = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password = db.Column(db.String(16))
+    about_me = db.Column(db.String(140))
+    last_seen = db.Column(db.DateTime)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def is_authenticated(self):
@@ -28,6 +31,9 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return '<User %r>' % (self.nickname)
+
+    def avatar(self, size):
+        return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
 
 class Post(db.Model):

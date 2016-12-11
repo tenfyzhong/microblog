@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from flask_wtf import Form
-from wtforms import StringField, BooleanField, PasswordField
-from wtforms.validators import DataRequired
+from wtforms import StringField, BooleanField, PasswordField, TextAreaField
+from wtforms.validators import DataRequired, Length
 
 
 class LoginForm(Form):
@@ -17,3 +17,8 @@ class LogonForm(Form):
     email = StringField('email', validators=[DataRequired()])
     password = PasswordField('password',
                              validators=[DataRequired()])
+
+
+class EditForm(Form):
+    nickname = StringField('nickname', validators=[DataRequired()])
+    about_me = TextAreaField('about_me', validators=[Length(min=0, max=140)])
