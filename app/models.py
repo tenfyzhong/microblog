@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from app import db
+import sys
+from app import db, app
 from flask_login import UserMixin
 from hashlib import md5
+
+enable_search = False if sys.version_info >= (3, 0) else True
+if enable_search:
+    import flask_whooshalchemy as whooshalchemy
 
 followers = db.Table(
     'followers',
@@ -81,6 +86,8 @@ class User(db.Model, UserMixin):
 
 
 class Post(db.Model):
+    __searchable__ = ['body']
+
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime)
@@ -88,3 +95,7 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post %r>' % (self.body)
+
+
+if enable_search:
+    whooshalchemy.whoosh_index(app, Post)

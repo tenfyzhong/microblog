@@ -27,3 +27,6 @@ MAIL_PASSWORD = None
 POSTS_PER_PAGE = 3
 
 ADMINS = ["you@example.com"]
+
+WHOOSH_BASE = os.path.join(basedir, 'search.db')
+MAX_SEARCH_RESULTS = 50
