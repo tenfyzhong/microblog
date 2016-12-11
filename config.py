@@ -24,4 +24,6 @@ MAIL_PORT = 25
 MAIL_USERNAME = None
 MAIL_PASSWORD = None
 
+POSTS_PER_PAGE = 3
+
 ADMINS = ["you@example.com"]
