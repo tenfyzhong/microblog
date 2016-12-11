@@ -16,6 +16,17 @@ def load_user(id):
     return u
 
 
+def after_logon(form):
+    app.logger.info(form.nickname.data)
+    app.logger.info(form.email.data)
+    app.logger.info(form.password.data)
+    user = User(nickname=form.nickname.data,
+                email=form.email.data,
+                password=form.password.data)
+    db.session.add(user)
+    db.session.commit()
+
+
 @app.before_request
 def before_request():
     g.user = current_user
@@ -77,15 +88,7 @@ def login():
 def logon():
     form = LogonForm()
     if form.validate_on_submit():
-        app.logger.info(form.nickname.data)
-        app.logger.info(form.email.data)
-        app.logger.info(form.password.data)
-        # TODO added by tenfy 2016-12-10 18:11 add to db
-        user = User(nickname=form.nickname.data,
-                    email=form.email.data,
-                    password=form.password.data)
-        db.session.add(user)
-        db.session.commit()
+        after_logon(form)
         return redirect(url_for('login'))
 
     return render_template('logon.html',
@@ -97,11 +100,6 @@ def logon():
 def logout():
     logout_user()
     return redirect(url_for('index'))
-
-
-@app.route('/error')
-def error():
-    return render_template("error.html")
 
 
 @app.route('/user/<nickname>')
@@ -124,7 +122,7 @@ def user(nickname):
 @app.route("/edit", methods=['GET', 'POST'])
 @login_required
 def edit():
-    form = EditForm()
+    form = EditForm(g.user.nickname)
     if form.validate_on_submit():
         g.user.nickname = form.nickname.data
         g.user.about_me = form.about_me.data
@@ -136,3 +134,14 @@ def edit():
         form.nickname.data = g.user.nickname
         form.about_me.data = g.user.about_me
     return render_template('edit.html', form=form)
+
+
+@app.errorhandler(404)
+def internal_error_404(error):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_error_500(error):
+    db.session.rollback()
+    return render_template('500.html'), 400
