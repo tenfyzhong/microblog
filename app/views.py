@@ -25,6 +25,8 @@ def after_logon(form):
                 password=form.password.data)
     db.session.add(user)
     db.session.commit()
+    db.sessin.add(user.follow(user))
+    db.session.commit()
 
 
 @app.before_request
