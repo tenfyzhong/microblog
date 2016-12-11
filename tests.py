@@ -35,6 +35,30 @@ class TestCase(unittest.TestCase):
         nickname = User.make_unique_nickname('john')
         self.assertEqual(nickname, 'john2')
 
+    def test_follow(self):
+        u1 = User(nickname='john', email='john@example.com')
+        u2 = User(nickname='susan', email='susan@example.com')
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.commit()
+        self.assertIsNone(u1.unfollow(u2))
+        f = u1.follow(u2)
+        db.session.add(f)
+        db.session.commit()
+        self.assertIsNone(u1.follow(u2))
+        self.assertTrue(u1.is_following(u2))
+        self.assertEqual(u1.followed.count(), 1)
+        self.assertEqual(u1.followed.first().nickname, 'susan')
+        self.assertEqual(u2.followers.count(), 1)
+        self.assertEqual(u2.followers.first().nickname, 'john')
+        f = u1.unfollow(u2)
+        self.assertIsNotNone(f)
+        db.session.add(f)
+        db.session.commit()
+        self.assertFalse(u1.is_following(u2))
+        self.assertEqual(u1.followed.count(), 0)
+        self.assertEqual(u2.followers.count(), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
