@@ -1,5 +1,5 @@
 # microblog
-A simple flask example help you to len flask step to step. 
+A simple flask example help you to learn flask step by step. 
 
 # requirements
 ```
